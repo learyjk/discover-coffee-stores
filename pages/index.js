@@ -6,9 +6,23 @@ import styles from "../styles/Home.module.css";
 import coffeeStoresData from "../data/coffee-stores.json";
 
 export async function getStaticProps(context) {
+  const options = {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: process.env.FOURSQUARE_API_KEY,
+    },
+  };
+
+  const response = await fetch(
+    "https://api.foursquare.com/v3/places/search?query=coffee&near=94115&limit=6",
+    options
+  );
+  const data = await response.json();
+
   return {
     props: {
-      coffeeStores: coffeeStoresData,
+      coffeeStores: data.results,
     },
   };
 }
@@ -31,10 +45,10 @@ export default function Home({ coffeeStores }) {
               {coffeeStores.map((store) => {
                 return (
                   <Card
-                    key={store.id}
+                    key={store.fsq_id}
                     name={store.name}
-                    href={`/coffee-store/${store.id}`}
-                    imgUrl={store.imgUrl}
+                    href={`/coffee-store/${store.fsq_id}`}
+                    imgUrl={store.imgUrl || "/static/placeholder.jpg"}
                   />
                 );
               })}
