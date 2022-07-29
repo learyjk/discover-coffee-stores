@@ -2,22 +2,26 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import coffeeStoresData from "../../data/coffee-stores.json";
+import { fetchCoffeeStores } from "../../lib/coffee-stores";
 
-export function getStaticProps({ params }) {
+export async function getStaticProps({ params }) {
+  const coffeeStores = await fetchCoffeeStores();
+  console.log("params", params);
   return {
     props: {
-      coffeeStore: coffeeStoresData.find((coffeeStore) => {
-        return coffeeStore.id.toString() === params.id;
+      coffeeStore: coffeeStores.find((coffeeStore) => {
+        return coffeeStore.id === params.id;
       }),
     },
   };
 }
 
-export function getStaticPaths() {
-  const paths = coffeeStoresData.map((coffeeStore) => {
+export async function getStaticPaths() {
+  const coffeeStores = await fetchCoffeeStores();
+  const paths = coffeeStores.map((coffeeStore) => {
     return {
       params: {
-        id: coffeeStore.id.toString(),
+        id: coffeeStore.id,
       },
     };
   });
@@ -29,14 +33,13 @@ export function getStaticPaths() {
 }
 
 const CoffeeStore = (props) => {
-  console.log("props", props);
   const router = useRouter();
 
   if (router.isFallback) {
     return <div>Loading</div>;
   }
 
-  const { name, neighbourhood, address } = props.coffeeStore;
+  const { name, address, neighborhood } = props.coffeeStore;
 
   return (
     <>
@@ -48,7 +51,7 @@ const CoffeeStore = (props) => {
       <section>
         <div className="w-full max-w-4xl mx-auto px-4 py-4">
           <p>{address}</p>
-          <p>{neighbourhood}</p>
+          <p>{neighborhood[0]}</p>
 
           <Link href="/">Back to Home</Link>
         </div>

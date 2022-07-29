@@ -34,9 +34,9 @@ export default function Home({ coffeeStores }) {
               {coffeeStores.map((store) => {
                 return (
                   <Card
-                    key={store.fsq_id}
+                    key={store.id}
                     name={store.name}
-                    href={`/coffee-store/${store.fsq_id}`}
+                    href={`/coffee-store/${store.id}`}
                     imgUrl={store.imgUrl || "/static/placeholder.jpg"}
                   />
                 );
