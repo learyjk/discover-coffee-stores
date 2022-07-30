@@ -5,6 +5,9 @@ import { Card } from "../components/card";
 import styles from "../styles/Home.module.css";
 import coffeeStoresData from "../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../lib/coffee-stores";
+import useTrackLocation from "../hooks/use-track-location";
+import { useContext, useEffect, useState } from "react";
+import { ACTION_TYPES, StoreContext } from "./_app";
 
 export async function getStaticProps(context) {
   const coffeeStores = await fetchCoffeeStores();
@@ -16,8 +19,42 @@ export async function getStaticProps(context) {
   };
 }
 
-export default function Home({ coffeeStores }) {
-  //onsole.log("props", props);
+export default function Home(props) {
+  // const [coffeeStores, setCoffeeStores] = useState([]);
+  const { state, dispatch } = useContext(StoreContext);
+
+  const {
+    handleTrackLocation,
+    // latLong,
+    locationErrorMessage,
+    isFindingLocation,
+  } = useTrackLocation();
+
+  const { coffeeStores, latLong } = state;
+
+  useEffect(() => {
+    if (!latLong) return;
+    const getCoffeeStores = async () => {
+      try {
+        const fetchedCoffeeStores = await fetchCoffeeStores(latLong, 30);
+        //set coffee stores
+        // setCoffeeStores(fetchedCoffeeStores);
+        dispatch({
+          type: ACTION_TYPES.SET_COFFEE_STORES,
+          payload: { coffeeStores: fetchedCoffeeStores },
+        });
+      } catch (error) {
+        //set error
+        console.log(error);
+      }
+    };
+    getCoffeeStores();
+  }, [latLong, dispatch]);
+
+  const handleBannerButtonClick = () => {
+    handleTrackLocation();
+  };
+
   return (
     <div>
       <Head>
@@ -27,20 +64,39 @@ export default function Home({ coffeeStores }) {
       </Head>
 
       <main>
-        <Banner />
+        <Banner
+          onBannerButtonClick={handleBannerButtonClick}
+          buttonText={isFindingLocation ? "Locating..." : "VIew nearby stores"}
+        />
+        {locationErrorMessage && (
+          <p>Something went wrong {locationErrorMessage}</p>
+        )}
         <section>
           <div className="w-full max-w-4xl mx-auto px-4">
             <div className={styles.grid}>
-              {coffeeStores.map((store) => {
-                return (
-                  <Card
-                    key={store.id}
-                    name={store.name}
-                    href={`/coffee-store/${store.id}`}
-                    imgUrl={store.imgUrl || "/static/placeholder.jpg"}
-                  />
-                );
-              })}
+              {coffeeStores.length > 0 &&
+                coffeeStores.map((store) => {
+                  return (
+                    <Card
+                      key={store.id}
+                      name={store.name}
+                      href={`/coffee-store/${store.id}`}
+                      imgUrl={store.imgUrl || "/static/placeholder.jpg"}
+                    />
+                  );
+                })}
+
+              {props.coffeeStores.length > 0 &&
+                props.coffeeStores.map((store) => {
+                  return (
+                    <Card
+                      key={store.id}
+                      name={store.name}
+                      href={`/coffee-store/${store.id}`}
+                      imgUrl={store.imgUrl || "/static/placeholder.jpg"}
+                    />
+                  );
+                })}
             </div>
           </div>
         </section>

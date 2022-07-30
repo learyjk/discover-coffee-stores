@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useContext, useEffect, useState } from "react";
 
 import coffeeStoresData from "../../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
+import { isEmpty } from "../../utils";
+import { StoreContext } from "../_app";
 
 export async function getStaticProps({ params }) {
   const coffeeStores = await fetchCoffeeStores();
-  console.log("params", params);
+
+  const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
+    return coffeeStore.id.toString() === params.id;
+  });
   return {
     props: {
-      coffeeStore: coffeeStores.find((coffeeStore) => {
-        return coffeeStore.id === params.id;
-      }),
+      coffeeStore: findCoffeeStoreById ? findCoffeeStoreById : {},
     },
   };
 }
@@ -21,7 +25,7 @@ export async function getStaticPaths() {
   const paths = coffeeStores.map((coffeeStore) => {
     return {
       params: {
-        id: coffeeStore.id,
+        id: coffeeStore.id.toString(),
       },
     };
   });
@@ -32,14 +36,34 @@ export async function getStaticPaths() {
   };
 }
 
-const CoffeeStore = (props) => {
+const CoffeeStore = (initialProps) => {
   const router = useRouter();
+  const [coffeeStore, setCoffeeStore] = useState(
+    initialProps.coffeeStore || {}
+  );
+
+  const {
+    state: { coffeeStores },
+  } = useContext(StoreContext);
+
+  const id = router.query.id;
+
+  useEffect(() => {
+    if (isEmpty(initialProps.coffeeStore)) {
+      if (coffeeStores.length > 0) {
+        const findCoffeeStoreById = coffeeStores.find((coffeeStore) => {
+          return coffeeStore.id.toString() === id;
+        });
+        setCoffeeStore(findCoffeeStoreById);
+      }
+    }
+  }, [id, initialProps.coffeeStore, coffeeStores]);
 
   if (router.isFallback) {
     return <div>Loading</div>;
   }
 
-  const { name, address, neighborhood } = props.coffeeStore;
+  const { name, address, neighborhood } = coffeeStore;
 
   return (
     <>
@@ -51,7 +75,7 @@ const CoffeeStore = (props) => {
       <section>
         <div className="w-full max-w-4xl mx-auto px-4 py-4">
           <p>{address}</p>
-          <p>{neighborhood[0]}</p>
+          <p>{neighborhood && neighborhood[0]}</p>
 
           <Link href="/">Back to Home</Link>
         </div>
