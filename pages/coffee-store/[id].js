@@ -5,7 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import coffeeStoresData from "../../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
 import { isEmpty } from "../../utils";
-import { StoreContext } from "../_app";
+import { StoreContext } from "../../store/store-context";
 
 export async function getStaticProps({ params }) {
   const coffeeStores = await fetchCoffeeStores();
