@@ -41,6 +41,7 @@ const CoffeeStore = (initialProps) => {
   const [coffeeStore, setCoffeeStore] = useState(
     initialProps.coffeeStore || {}
   );
+  const [votingCount, setVotingCount] = useState(1);
 
   const {
     state: { coffeeStores },
@@ -95,6 +96,12 @@ const CoffeeStore = (initialProps) => {
 
   const { name, address, neighborhood } = coffeeStore;
 
+  const handleUpvoteButton = () => {
+    console.log("handle upvote");
+    let count = votingCount + 1;
+    setVotingCount(count);
+  };
+
   return (
     <>
       <section className="text-amber-100 bg-amber-900">
@@ -106,6 +113,12 @@ const CoffeeStore = (initialProps) => {
         <div className="w-full max-w-4xl mx-auto px-4 py-4">
           <p>{address}</p>
           <p>{neighborhood && neighborhood[0]}</p>
+          <div className="flex">
+            <button className="block" onClick={handleUpvoteButton}>
+              Upvote
+            </button>
+            <p className="ml-4">{votingCount}</p>
+          </div>
 
           <Link href="/">Back to Home</Link>
         </div>
