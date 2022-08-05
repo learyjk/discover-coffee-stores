@@ -99,6 +99,7 @@ const CoffeeStore = (initialProps) => {
     if (data && data.length > 0) {
       console.log("SWR data", data);
       setCoffeeStore(data[0]);
+      setVotingCount(data[0].voting);
     }
   }, [data]);
 
