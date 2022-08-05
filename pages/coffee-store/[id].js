@@ -2,10 +2,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 
+import useSWR from "swr";
+
 import coffeeStoresData from "../../data/coffee-stores.json";
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
 import { isEmpty } from "../../utils";
 import { StoreContext } from "../../store/store-context";
+import { fetcher } from "../../lib/fetcher";
 
 export async function getStaticProps({ params }) {
   const coffeeStores = await fetchCoffeeStores();
@@ -51,7 +54,6 @@ const CoffeeStore = (initialProps) => {
 
   const handleCreateCoffeeStore = async (coffeeStore) => {
     const { id, name, voting, address, neighborhood } = coffeeStore;
-    console.log("coffeeStore", coffeeStore);
     try {
       const response = await fetch("/api/createCoffeeStore", {
         method: "POST",
@@ -67,7 +69,6 @@ const CoffeeStore = (initialProps) => {
         }),
       });
       const dbCoffeeStore = response.json();
-      console.log(dbCoffeeStore);
     } catch (error) {
       console.error("Error creating coffee store");
     }
@@ -90,6 +91,17 @@ const CoffeeStore = (initialProps) => {
     }
   }, [id, initialProps.coffeeStore, coffeeStores]);
 
+  console.log("id", id);
+
+  const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      console.log("SWR data", data);
+      setCoffeeStore(data[0]);
+    }
+  }, [data]);
+
   if (router.isFallback) {
     return <div>Loading</div>;
   }
@@ -97,10 +109,13 @@ const CoffeeStore = (initialProps) => {
   const { name, address, neighborhood } = coffeeStore;
 
   const handleUpvoteButton = () => {
-    console.log("handle upvote");
     let count = votingCount + 1;
     setVotingCount(count);
   };
+
+  if (error) {
+    return <div>Something went wrong getting the coffee store page</div>;
+  }
 
   return (
     <>
