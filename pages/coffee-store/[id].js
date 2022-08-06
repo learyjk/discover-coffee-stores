@@ -91,10 +91,8 @@ const CoffeeStore = (initialProps) => {
     }
   }, [id, initialProps.coffeeStore, coffeeStores]);
 
-  console.log("id", id);
-
   const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
-
+  console.log("data", data);
   useEffect(() => {
     if (data && data.length > 0) {
       console.log("SWR data", data);
@@ -109,9 +107,27 @@ const CoffeeStore = (initialProps) => {
 
   const { name, address, neighborhood } = coffeeStore;
 
-  const handleUpvoteButton = () => {
-    let count = votingCount + 1;
-    setVotingCount(count);
+  const handleUpvoteButton = async () => {
+    try {
+      const response = await fetch("/api/favoriteCoffeeStoreById", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      });
+
+      const dbCoffeeStore = await response.json();
+
+      if (dbCoffeeStore && dbCoffeeStore.length > 0) {
+        let count = votingCount + 1;
+        setVotingCount(count);
+      }
+    } catch (err) {
+      console.error("Error upvoting the coffee store", err);
+    }
   };
 
   if (error) {
