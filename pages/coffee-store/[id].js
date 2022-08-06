@@ -44,7 +44,7 @@ const CoffeeStore = (initialProps) => {
   const [coffeeStore, setCoffeeStore] = useState(
     initialProps.coffeeStore || {}
   );
-  const [votingCount, setVotingCount] = useState(1);
+  const [votingCount, setVotingCount] = useState(0);
 
   const {
     state: { coffeeStores },
